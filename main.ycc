@@ -2,6 +2,7 @@
 def main(){
   println("hello world");
   println( type(1) + 1  + 1);
+  testall();
 }
 
 

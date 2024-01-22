@@ -109,7 +109,7 @@ struct IfNode : AstNode {
     void prepare(Context* ctx) override {
         _expr.prepare(ctx);
         _if_stmt->prepare(ctx);
-        _else_stmt->prepare(ctx);
+        if (_else_stmt) _else_stmt->prepare(ctx);
     }
 
     void set_else(StmtNode* stmt) { _else_stmt = stmt; }
