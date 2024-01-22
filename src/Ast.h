@@ -8,11 +8,13 @@ struct AstNode {
     AstNode() {};
     // return true when using return
     [[nodiscard]] virtual bool exec(Context* ctx) { return true; }
+
+    virtual void prepare(Context* ctx) {};
+
     virtual ~AstNode() = default;
     virtual bool is_if() const { return false; }
     std::string ast_string() {
         std::stringstream out;
-
         debug_string(out, "");
         return out.str();
     }
@@ -31,6 +33,9 @@ struct ExprExecuteNode : AstNode {
         _expr(ctx);
         return false;
     }
+
+    void prepare(Context* ctx) override { _expr.prepare(ctx); }
+
     void debug_string(std::stringstream& out, const std::string& prefix) override {
         out << prefix << counter() << _expr.expr_name() << "\n";
     }
@@ -46,6 +51,9 @@ struct ReturnNode : AstNode {
         ctx->set_ret(_ret_expr(ctx));
         return true;
     }
+
+    void prepare(Context* ctx) override { _ret_expr.prepare(ctx); }
+
     void debug_string(std::stringstream& out, const std::string& prefix) override {
         out << prefix << counter() << "return " << _ret_expr.expr_name() << "\n";
     }
@@ -62,6 +70,13 @@ struct StmtNode : AstNode {
         }
         return false;
     }
+
+    void prepare(Context* ctx) override {
+        for (auto* node : _command) {
+            node->prepare(ctx);
+        }
+    }
+
     void add_command(AstNode* node) { _command.push_back(node); }
     AstNode* back_command() { return _command.back(); }
     void debug_string(std::stringstream& out, const std::string& prefix) override {
@@ -89,6 +104,12 @@ struct IfNode : AstNode {
             }
         }
         return false;
+    }
+
+    void prepare(Context* ctx) override {
+        _expr.prepare(ctx);
+        _if_stmt->prepare(ctx);
+        _else_stmt->prepare(ctx);
     }
 
     void set_else(StmtNode* stmt) { _else_stmt = stmt; }
@@ -119,6 +140,11 @@ struct WhileNode : AstNode {
         return false;
     }
 
+    void prepare(Context* ctx) override {
+        _expr.prepare(ctx);
+        _while_stmt->prepare(ctx);
+    }
+
     void debug_string(std::stringstream& out, const std::string& prefix) override {
         out << prefix << counter() << "while " << _expr.expr_name() << "\n";
         _while_stmt->debug_string(out, prefix + "\t");
@@ -143,6 +169,13 @@ struct ForNode : AstNode {
         return false;
     }
 
+    void prepare(Context* ctx) override {
+        _expr1.prepare(ctx);
+        _expr2.prepare(ctx);
+        _expr3.prepare(ctx);
+        _for_stmt->prepare(ctx);
+    }
+
     void debug_string(std::stringstream& out, const std::string& prefix) override {
         out << prefix << counter() << "for " << _expr1.expr_name() << " " << _expr2.expr_name()
             << " " << _expr3.expr_name() << "\n";
@@ -156,19 +189,21 @@ private:
     StmtNode* _for_stmt;
 };
 
-
 struct ForeachNode : AstNode {
-    ForeachNode(Expr& expr, const std::string var_name , StmtNode* for_stmt)
-            : _expr(std::move(expr)),
-            _var_name(var_name),
-              _for_stmt(for_stmt) {}
+    ForeachNode(Expr& expr, const std::string var_name, StmtNode* for_stmt)
+            : _expr(std::move(expr)), _var_name(var_name), _for_stmt(for_stmt) {}
     [[nodiscard]] bool exec(Context* ctx) override {
         auto arr = _expr(ctx);
-        for(Value v :         arr.get_arr()){
-             ctx->func()->variable_mgr()->set(_var_name, v);
-             RETURN_IF_TRUE(_for_stmt->exec(ctx));
+        for (Value v : arr.get_arr()) {
+            ctx->func()->variable_mgr()->set(_var_name, v);
+            RETURN_IF_TRUE(_for_stmt->exec(ctx));
         }
         return false;
+    }
+
+    void prepare(Context* ctx) override {
+        _expr.prepare(ctx);
+        _for_stmt->prepare(ctx);
     }
 
     void debug_string(std::stringstream& out, const std::string& prefix) override {
@@ -184,7 +219,6 @@ private:
     StmtNode* _for_stmt;
 };
 
-
 struct FuncNode : AstNode {
     FuncNode(const std::string func_name) : _func_name(func_name) {}
     bool exec(Context* ctx) override {
@@ -198,6 +232,8 @@ struct FuncNode : AstNode {
         out << prefix << counter() << "func " << _func_name << "\n";
         _stmt->debug_string(out, prefix + "\t");
     }
+
+    void prepare(Context* ctx) override { _stmt->prepare(ctx); }
 
 private:
     StmtNode* _stmt;

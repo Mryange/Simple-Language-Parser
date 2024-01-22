@@ -112,3 +112,5 @@ Value& ReferenceWrapping::Dereference() const {
 std::string ReferenceWrapping::ref_name() const {
     return _ref->first;
 }
+
+Value Value::default_value = Value::make_Int(0);

@@ -7,7 +7,7 @@ struct Context;
 
 struct ExprNode {
     virtual Value exec(Context*) = 0;
-    ExprNode* child(int id) const  {
+    ExprNode* child(int id) const {
         CHECK(id < _child.size(), "out of bound");
         return _child[id].get();
     }
@@ -15,6 +15,10 @@ struct ExprNode {
     std::vector<std::unique_ptr<ExprNode>> _child;
     virtual ~ExprNode() = default;
     virtual int Opnums() = 0;
+    virtual Value& get_variable(Context* ctx) {
+        CHECK(0, " not a variable ");
+        return Value::default_value;
+    }
     virtual bool is_variable() { return false; }
     virtual bool is_constant() { return false; }
     virtual void prepare(Context* ctx) {
@@ -56,9 +60,9 @@ struct BinaryOperator : ExprNode {
         return BinaryOp::op(Lchild()->exec(ctx), Rchild()->exec(ctx));
     }
 
-    ExprNode* Lchild()  const { return child(0); }
+    ExprNode* Lchild() const { return child(0); }
 
-    ExprNode* Rchild() const  { return child(1); }
+    ExprNode* Rchild() const { return child(1); }
 
     int Opnums() override { return 2; }
 
@@ -156,7 +160,7 @@ struct VariableNode : ExprNode {
     VariableNode(const std::string& name) : _name(name) {}
 
     Value exec(Context* ctx) override;
-    virtual Value& get_variable(Context* ctx);
+    virtual Value& get_variable(Context* ctx) override;
     ReferenceWrapping& ref(Context* ctx);
     int Opnums() override { return 0; }
 
@@ -238,25 +242,19 @@ struct RefOperator : ExprNode {
     Value exec(Context* ctx) override;
     int Opnums() override { return 1; }
 
-    std::string name() const override {
-        return "Ref " + _child[0]->name();
-    }
+    std::string name() const override { return "Ref " + _child[0]->name(); }
 };
 
 struct ArrOperator : ExprNode {
     ENABLE_FACTORY_CREATOR(ArrOperator);
     Value exec(Context* ctx) override;
     int Opnums() override { return 1; }
-     std::string name() const override {
-        return "Arr " + _child[0]->name();
-    }
+    std::string name() const override { return "Arr " + _child[0]->name(); }
 };
 
 struct StructOperator : ExprNode {
     ENABLE_FACTORY_CREATOR(StructOperator);
     Value exec(Context* ctx) override;
     int Opnums() override { return 1; }
-    std::string name() const override {
-        return "Let " + _child[0]->name();
-    }
+    std::string name() const override { return "Let " + _child[0]->name(); }
 };

@@ -12,11 +12,8 @@ struct Expr {
     Expr(std::unique_ptr<ExprNode> node) : _node(std::move(node)) {}
     auto operator()(Context* ctx) { return _node->exec(ctx); }
     auto& node() { return _node; }
-    auto expr_name() {
-        return
-
-                _node->name();
-    }
+    auto expr_name() { return _node->name(); }
+    void prepare(Context* ctx) { _node->prepare(ctx); }
 
 private:
     std::unique_ptr<ExprNode> _node;

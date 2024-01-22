@@ -30,10 +30,18 @@ def main(){
 }
 ```
 
+### 运算符
+
+```
+"+",  "-", "*", "/",  "==", "!=", "=",   ".",  "<=",
+">=", "<", ">", "&&", "||", "&",  "arr", "let"
+```
+
 ### 基础数据类型
 
 基础数据为整数/浮点数/字符串 
 默认都是值语义
+
 
 
 ```C#
@@ -76,9 +84,59 @@ def testarr(){
 ```
 
 
+### 结构体
+
+类似C的结构体，支持单继承，目前还不支持成员函数
+
+```C#
+struct A{
+    x = 1;
+}
+
+struct B extends A{
+    y = 23;
+}
+def testStruct(){
+    b = let B;
+    b.y = 114;
+    println(b.x + b.y);
+    a = & b;
+    a.y = 514;
+    println(b.y);
+}
+```
+
 
 
 
 ### 控制流语句
 
 支持 if else while for foreach
+
+语法上类似C的
+
+foreach 类似C++的 for(x : arr) 
+arr必须是一个arr
+
+### 内建函数
+
+
+len 
+获得一个数组的长度
+
+type
+获得当前变量的类型
+
+range(st,ed,step) 
+py的range
+
+trans
+把一个结构体的成员变量转换成一个数组
+
+input 
+读入一个字符串
+
+int
+字符串转int
+
+

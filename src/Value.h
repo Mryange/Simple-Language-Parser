@@ -107,9 +107,9 @@ struct Value {
     using autoType = std::variant<IntValue, BoolValue, FloatValue, StringValue, RefValue, ArrValue,
                                   StructValue>;
 
-    inline const static IntValue default_value = 0;
+    static Value default_value;
 
-    Value() : _value(default_value) {}
+    Value() : _value(IntValue(0)) {}
     Value(const Value& rhs) = default;
     Value& operator=(const Value& rhs) = default;
     ~Value() = default;
@@ -140,9 +140,7 @@ struct Value {
         requires(std::is_floating_point_v<CppType>)
     Value(const CppType& rhs) : _value(FloatValue(rhs)) {}
 
-    template <typename CppType>
-        requires(std::is_same_v<CppType, std::string>)
-    Value(const CppType& rhs) : _value(StringValue(rhs)) {}
+    Value(const std::string& rhs) : _value(StringValue(rhs)) {}
 
     Type type() const {
         return std::visit([](auto&& v) { return v.type(); }, _value);

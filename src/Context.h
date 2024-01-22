@@ -19,20 +19,15 @@ private:
 };
 struct GlobalContext {
     GlobalContext();
-    void add_expr(ExprNode* expr){
-        _exprs.push_back(expr);
-    }
-    void prepare_expr(Context * ctx);
+    void prepare(Context* ctx);
 private:
     friend class Context;
     ObjectPool _obj_pool;
     std::vector<FunctionContext> _func_stack;
-    std::vector<ExprNode*> _exprs;
     std::unique_ptr<FunctionMgr> _function_mgr;
     std::unique_ptr<StructInfoMgr> _struct_mgr;
     std::vector<FuncNode*> _func_nodes;
 };
-
 
 struct Context {
 public:

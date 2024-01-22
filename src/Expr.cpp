@@ -48,10 +48,9 @@ Value ArrOperator::exec(Context* ctx) {
     return Value::make_Arr(arr);
 }
 
-
 Value StructOperator::exec(Context* ctx) {
     CHECK(child(0)->is_variable(), " struct name ");
-    auto struct_name = dynamic_cast<VariableNode*>(child(0))->name();
+    auto struct_name = child(0)->name();
     return ctx->struct_info()->get_default_struct_value(struct_name);
 }
 
@@ -62,10 +61,9 @@ Value SubscriptOperator::exec(Context* ctx) {
 Value& SubscriptOperator::get_variable(Context* ctx) {
     CHECK(_child.size() == 2, "[] must only one child");
     CHECK(child(0)->is_variable(), "[] must be use in variable");
-    Value& var = dynamic_cast<VariableNode*>(child(0))->get_variable(ctx);
+    Value& var = child(0)->get_variable(ctx);
     return var[child(1)->exec(ctx)];
 }
-
 
 Value MemberAccessOperator::exec(Context* ctx) {
     return get_variable(ctx);
@@ -75,6 +73,6 @@ Value& MemberAccessOperator::get_variable(Context* ctx) {
     CHECK(_child.size() == 2, "[] must only one child");
     CHECK(child(0)->is_variable(), " var.var ");
     CHECK(child(1)->is_variable(), " var.var ");
-    Value& var = dynamic_cast<VariableNode*>(child(0))->get_variable(ctx);
-    return var[dynamic_cast<VariableNode*>(child(1))->name()];
+    Value& var = child(0)->get_variable(ctx);
+    return var[child(1)->name()];
 }

@@ -32,7 +32,7 @@ void VM::run() {
     }
 
 
-    ctx.global()->prepare_expr(&ctx);
+    ctx.global()->prepare(&ctx);
 
     auto main_func = ctx.func_mgr()->get_func({"main", 0});
 

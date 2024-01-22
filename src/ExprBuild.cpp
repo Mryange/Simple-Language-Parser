@@ -58,7 +58,6 @@ Expr ExprBuild::build(Context* ctx, TokenStream& stream) {
     CHECK(stk.size() == 1, "stk.size() == 1");
     auto expr_name = stream.get_token_string(token_pos_begin, stream.cur_pos());
     Expr expr {std::move(stk.top())};
-    ctx->global()->add_expr(expr.node().get());
     stk.pop();
     return expr;
 }
